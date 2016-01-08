@@ -1,0 +1,12 @@
+package hu.zsinko.rpctime;
+option java_package = "hu.zsinko.rpctime.proto";
+option java_outer_classname = "TimeServerMessages";
+message TimeResponse
+{
+    required string current_time = 1; //server to connect to
+}
+
+message TimeRequest
+{
+
+}

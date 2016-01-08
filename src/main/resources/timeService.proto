@@ -1,0 +1,10 @@
+package hu.zsinko.rpctime;
+import "timeServerMessages.proto";
+option java_package = "hu.zsinko.rpctime.proto";
+option java_outer_classname = "TimeServerServices";
+option java_generic_services = true;
+
+service TimeService
+{
+    rpc getCurrentTime(TimeRequest) returns (TimeResponse);
+}
