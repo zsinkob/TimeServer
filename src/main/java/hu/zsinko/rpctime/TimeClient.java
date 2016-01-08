@@ -1,15 +1,13 @@
 package hu.zsinko.rpctime;
 
-import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
+import com.google.protobuf.ServiceException;
 import com.googlecode.protobuf.pro.duplex.CleanShutdownHandler;
 import com.googlecode.protobuf.pro.duplex.PeerInfo;
 import com.googlecode.protobuf.pro.duplex.RpcClientChannel;
 import com.googlecode.protobuf.pro.duplex.client.DuplexTcpClientPipelineFactory;
 import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
-import hu.zsinko.rpctime.proto.TimeServerMessages;
-import hu.zsinko.rpctime.proto.TimeServerServices;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -17,16 +15,32 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 
 import java.io.IOException;
 
-import static hu.zsinko.rpctime.proto.TimeServerMessages.*;
+import static hu.zsinko.rpctime.proto.TimeServerMessages.TimeRequest;
+import static hu.zsinko.rpctime.proto.TimeServerMessages.TimeResponse;
+import static hu.zsinko.rpctime.proto.TimeServerServices.TimeService;
 
-/**
- * Created by Balázs on 2016. 01. 08..
- */
+
 public class TimeClient {
 
-    public static void main(String[] args) throws IOException {
-        PeerInfo server = new PeerInfo("localhost", 4446);
+    private RpcController rpcController;
+    private RpcClientChannel channel;
+    private PeerInfo server;
 
+    public static void main(String[] args) throws IOException {
+
+        TimeClient timeClient = new TimeClient("localhost", 4446);
+        timeClient.connect();
+        String currentTime = timeClient.getCurrentTime();
+        System.out.println("Current time: " + currentTime);
+        timeClient.close();
+        System.exit(0);
+    }
+
+    public TimeClient(final String serverName, final int port) {
+        this.server = new PeerInfo(serverName, port);
+    }
+
+    public void connect() throws IOException {
         DuplexTcpClientPipelineFactory clientFactory = new DuplexTcpClientPipelineFactory();
 
         RpcServerCallExecutor executor = new ThreadPoolCallExecutor(10, 10);
@@ -44,30 +58,31 @@ public class TimeClient {
         bootstrap.option(ChannelOption.SO_SNDBUF, 1048576);
         bootstrap.option(ChannelOption.SO_RCVBUF, 1048576);
 
-        RpcClientChannel channel = clientFactory.peerWith(server, bootstrap);
         CleanShutdownHandler shutdownHandler = new CleanShutdownHandler();
         shutdownHandler.addResource(workers);
         shutdownHandler.addResource(executor);
 
+        channel = clientFactory.peerWith(server, bootstrap);
 
-        // Call service
-        TimeServerServices.TimeService.Stub myService = TimeServerServices.TimeService.newStub(channel);
+        rpcController = channel.newRpcController();
+    }
 
-        RpcController controller = channel.newRpcController();
+
+    public String getCurrentTime() {
+        TimeService.BlockingInterface timeService = TimeService.newBlockingStub(channel);
 
         TimeRequest.Builder timeRequest = TimeRequest.newBuilder();
-        myService.getCurrentTime(controller, timeRequest.build(),
-                new RpcCallback<TimeServerMessages.TimeResponse>() {
-                    public void run(TimeResponse myResponse) {
-                        System.out.println("Received Response: " + myResponse);
-                    }
-                });
-        if (controller.failed()) {
-            System.err.println(String.format("Rpc failed %s ", controller.errorText()));
+        try {
+            TimeResponse response = timeService.getCurrentTime(rpcController, timeRequest.build());
+            return response.getCurrentTime();
+        } catch (ServiceException e) {
+            System.err.println(String.format("Rpc failed %s ", rpcController.errorText()));
+            return "";
         }
-
-        channel.close();
-
-
     }
+
+    public void close() {
+        channel.close();
+    }
+
 }
