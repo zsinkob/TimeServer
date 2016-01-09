@@ -1,4 +1,4 @@
-package hu.zsinko.rpctime;
+package hu.zsinko.rpctime.server.rpc;
 
 import com.google.protobuf.RpcCallback;
 import com.google.protobuf.RpcController;
@@ -15,9 +15,9 @@ import static hu.zsinko.rpctime.proto.TimeServerMessages.TimeResponse;
 public class TimeServiceImpl extends TimeServerServices.TimeService {
 
 
-    private Queue<String> queue;
+    private Queue<Long> queue;
 
-    public TimeServiceImpl(Queue<String> queue) {
+    public TimeServiceImpl(Queue<Long> queue) {
         this.queue = queue;
     }
 
@@ -25,7 +25,7 @@ public class TimeServiceImpl extends TimeServerServices.TimeService {
     public void getCurrentTime(RpcController controller, TimeRequest request, RpcCallback<TimeServerMessages.TimeResponse> done) {
         TimeResponse.Builder timeResponse = TimeResponse.newBuilder();
 
-        String currentTime = LocalTime.now().toString();
+        long currentTime = System.currentTimeMillis();
         queue.add(currentTime);
         timeResponse.setCurrentTime(currentTime);
         done.run(timeResponse.build());

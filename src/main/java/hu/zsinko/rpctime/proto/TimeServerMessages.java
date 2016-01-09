@@ -13,7 +13,7 @@ public final class TimeServerMessages {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>required string current_time = 1;</code>
+     * <code>required int64 current_time = 1;</code>
      *
      * <pre>
      *server to connect to
@@ -21,22 +21,13 @@ public final class TimeServerMessages {
      */
     boolean hasCurrentTime();
     /**
-     * <code>required string current_time = 1;</code>
+     * <code>required int64 current_time = 1;</code>
      *
      * <pre>
      *server to connect to
      * </pre>
      */
-    java.lang.String getCurrentTime();
-    /**
-     * <code>required string current_time = 1;</code>
-     *
-     * <pre>
-     *server to connect to
-     * </pre>
-     */
-    com.google.protobuf.ByteString
-        getCurrentTimeBytes();
+    long getCurrentTime();
   }
   /**
    * Protobuf type {@code hu.zsinko.rpctime.TimeResponse}
@@ -90,10 +81,9 @@ public final class TimeServerMessages {
               }
               break;
             }
-            case 10: {
-              com.google.protobuf.ByteString bs = input.readBytes();
+            case 8: {
               bitField0_ |= 0x00000001;
-              currentTime_ = bs;
+              currentTime_ = input.readInt64();
               break;
             }
           }
@@ -137,9 +127,9 @@ public final class TimeServerMessages {
 
     private int bitField0_;
     public static final int CURRENT_TIME_FIELD_NUMBER = 1;
-    private java.lang.Object currentTime_;
+    private long currentTime_;
     /**
-     * <code>required string current_time = 1;</code>
+     * <code>required int64 current_time = 1;</code>
      *
      * <pre>
      *server to connect to
@@ -149,49 +139,18 @@ public final class TimeServerMessages {
       return ((bitField0_ & 0x00000001) == 0x00000001);
     }
     /**
-     * <code>required string current_time = 1;</code>
+     * <code>required int64 current_time = 1;</code>
      *
      * <pre>
      *server to connect to
      * </pre>
      */
-    public java.lang.String getCurrentTime() {
-      java.lang.Object ref = currentTime_;
-      if (ref instanceof java.lang.String) {
-        return (java.lang.String) ref;
-      } else {
-        com.google.protobuf.ByteString bs = 
-            (com.google.protobuf.ByteString) ref;
-        java.lang.String s = bs.toStringUtf8();
-        if (bs.isValidUtf8()) {
-          currentTime_ = s;
-        }
-        return s;
-      }
-    }
-    /**
-     * <code>required string current_time = 1;</code>
-     *
-     * <pre>
-     *server to connect to
-     * </pre>
-     */
-    public com.google.protobuf.ByteString
-        getCurrentTimeBytes() {
-      java.lang.Object ref = currentTime_;
-      if (ref instanceof java.lang.String) {
-        com.google.protobuf.ByteString b = 
-            com.google.protobuf.ByteString.copyFromUtf8(
-                (java.lang.String) ref);
-        currentTime_ = b;
-        return b;
-      } else {
-        return (com.google.protobuf.ByteString) ref;
-      }
+    public long getCurrentTime() {
+      return currentTime_;
     }
 
     private void initFields() {
-      currentTime_ = "";
+      currentTime_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -211,7 +170,7 @@ public final class TimeServerMessages {
                         throws java.io.IOException {
       getSerializedSize();
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
-        output.writeBytes(1, getCurrentTimeBytes());
+        output.writeInt64(1, currentTime_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -224,7 +183,7 @@ public final class TimeServerMessages {
       size = 0;
       if (((bitField0_ & 0x00000001) == 0x00000001)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeBytesSize(1, getCurrentTimeBytes());
+          .computeInt64Size(1, currentTime_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -343,7 +302,7 @@ public final class TimeServerMessages {
 
       public Builder clear() {
         super.clear();
-        currentTime_ = "";
+        currentTime_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
@@ -394,9 +353,7 @@ public final class TimeServerMessages {
       public Builder mergeFrom(hu.zsinko.rpctime.proto.TimeServerMessages.TimeResponse other) {
         if (other == hu.zsinko.rpctime.proto.TimeServerMessages.TimeResponse.getDefaultInstance()) return this;
         if (other.hasCurrentTime()) {
-          bitField0_ |= 0x00000001;
-          currentTime_ = other.currentTime_;
-          onChanged();
+          setCurrentTime(other.getCurrentTime());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -429,9 +386,9 @@ public final class TimeServerMessages {
       }
       private int bitField0_;
 
-      private java.lang.Object currentTime_ = "";
+      private long currentTime_ ;
       /**
-       * <code>required string current_time = 1;</code>
+       * <code>required int64 current_time = 1;</code>
        *
        * <pre>
        *server to connect to
@@ -441,65 +398,30 @@ public final class TimeServerMessages {
         return ((bitField0_ & 0x00000001) == 0x00000001);
       }
       /**
-       * <code>required string current_time = 1;</code>
+       * <code>required int64 current_time = 1;</code>
        *
        * <pre>
        *server to connect to
        * </pre>
        */
-      public java.lang.String getCurrentTime() {
-        java.lang.Object ref = currentTime_;
-        if (!(ref instanceof java.lang.String)) {
-          com.google.protobuf.ByteString bs =
-              (com.google.protobuf.ByteString) ref;
-          java.lang.String s = bs.toStringUtf8();
-          if (bs.isValidUtf8()) {
-            currentTime_ = s;
-          }
-          return s;
-        } else {
-          return (java.lang.String) ref;
-        }
+      public long getCurrentTime() {
+        return currentTime_;
       }
       /**
-       * <code>required string current_time = 1;</code>
+       * <code>required int64 current_time = 1;</code>
        *
        * <pre>
        *server to connect to
        * </pre>
        */
-      public com.google.protobuf.ByteString
-          getCurrentTimeBytes() {
-        java.lang.Object ref = currentTime_;
-        if (ref instanceof String) {
-          com.google.protobuf.ByteString b = 
-              com.google.protobuf.ByteString.copyFromUtf8(
-                  (java.lang.String) ref);
-          currentTime_ = b;
-          return b;
-        } else {
-          return (com.google.protobuf.ByteString) ref;
-        }
-      }
-      /**
-       * <code>required string current_time = 1;</code>
-       *
-       * <pre>
-       *server to connect to
-       * </pre>
-       */
-      public Builder setCurrentTime(
-          java.lang.String value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
+      public Builder setCurrentTime(long value) {
+        bitField0_ |= 0x00000001;
         currentTime_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>required string current_time = 1;</code>
+       * <code>required int64 current_time = 1;</code>
        *
        * <pre>
        *server to connect to
@@ -507,24 +429,7 @@ public final class TimeServerMessages {
        */
       public Builder clearCurrentTime() {
         bitField0_ = (bitField0_ & ~0x00000001);
-        currentTime_ = getDefaultInstance().getCurrentTime();
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>required string current_time = 1;</code>
-       *
-       * <pre>
-       *server to connect to
-       * </pre>
-       */
-      public Builder setCurrentTimeBytes(
-          com.google.protobuf.ByteString value) {
-        if (value == null) {
-    throw new NullPointerException();
-  }
-  bitField0_ |= 0x00000001;
-        currentTime_ = value;
+        currentTime_ = 0L;
         onChanged();
         return this;
       }
@@ -874,7 +779,7 @@ public final class TimeServerMessages {
     java.lang.String[] descriptorData = {
       "\n\030timeServerMessages.proto\022\021hu.zsinko.rp" +
       "ctime\"$\n\014TimeResponse\022\024\n\014current_time\030\001 " +
-      "\002(\t\"\r\n\013TimeRequestB-\n\027hu.zsinko.rpctime." +
+      "\002(\003\"\r\n\013TimeRequestB-\n\027hu.zsinko.rpctime." +
       "protoB\022TimeServerMessages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =

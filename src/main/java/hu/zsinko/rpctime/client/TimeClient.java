@@ -1,4 +1,4 @@
-package hu.zsinko.rpctime;
+package hu.zsinko.rpctime.client;
 
 import com.google.protobuf.RpcController;
 import com.google.protobuf.ServiceException;
@@ -25,16 +25,9 @@ public class TimeClient {
     private RpcController rpcController;
     private RpcClientChannel channel;
     private PeerInfo server;
+    private CleanShutdownHandler shutdownHandler;
 
-    public static void main(String[] args) throws IOException {
 
-        TimeClient timeClient = new TimeClient("localhost", 4446);
-        timeClient.connect();
-        String currentTime = timeClient.getCurrentTime();
-        System.out.println("Current time: " + currentTime);
-        timeClient.close();
-        System.exit(0);
-    }
 
     public TimeClient(final String serverName, final int port) {
         this.server = new PeerInfo(serverName, port);
@@ -58,7 +51,7 @@ public class TimeClient {
         bootstrap.option(ChannelOption.SO_SNDBUF, 1048576);
         bootstrap.option(ChannelOption.SO_RCVBUF, 1048576);
 
-        CleanShutdownHandler shutdownHandler = new CleanShutdownHandler();
+        shutdownHandler = new CleanShutdownHandler();
         shutdownHandler.addResource(workers);
         shutdownHandler.addResource(executor);
 
@@ -68,7 +61,7 @@ public class TimeClient {
     }
 
 
-    public String getCurrentTime() {
+    public long getCurrentTime() {
         TimeService.BlockingInterface timeService = TimeService.newBlockingStub(channel);
 
         TimeRequest.Builder timeRequest = TimeRequest.newBuilder();
@@ -77,12 +70,13 @@ public class TimeClient {
             return response.getCurrentTime();
         } catch (ServiceException e) {
             System.err.println(String.format("Rpc failed %s ", rpcController.errorText()));
-            return "";
+            return 0;
         }
     }
 
     public void close() {
         channel.close();
+        shutdownHandler.shutdown();
     }
 
 }
