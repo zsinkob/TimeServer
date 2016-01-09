@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>JQuery Demo</title>
+    <script type="text/javascript" src="scripts/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript">
+         $(document).ready(function() {
+                    setInterval(refresh, 5000);
+                    refresh();
+         });
+
+         function refresh() {
+             $.ajax({
+             type: "GET",
+             dataType: "json",
+             url: "http://localhost:8080/timerequests",
+             success: function(data){
+             var cList = $('#timelist');
+             cList.empty();
+             $.each(data.time, function(i)
+                {
+                    $('<li/>').text(data.time[i]).appendTo(cList);
+                });
+             }});
+         };
+
+    </script>
+</head>
+<body>
+<h1>Last time requests
+</h1>
+<div>
+    <ul id="timelist">
+    </ul>
+</div>
+</body>
+</html>
