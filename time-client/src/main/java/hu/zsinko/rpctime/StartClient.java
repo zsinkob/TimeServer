@@ -1,6 +1,7 @@
 package hu.zsinko.rpctime;
 
 import hu.zsinko.rpctime.client.TimeClient;
+import hu.zsinko.rpctime.client.TimeClientConfiguration;
 
 import java.io.IOException;
 

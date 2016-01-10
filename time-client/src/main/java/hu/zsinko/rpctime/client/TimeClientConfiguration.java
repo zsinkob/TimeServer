@@ -1,4 +1,4 @@
-package hu.zsinko.rpctime;
+package hu.zsinko.rpctime.client;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.slf4j.Logger;

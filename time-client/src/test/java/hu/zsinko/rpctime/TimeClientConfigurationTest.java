@@ -1,5 +1,6 @@
 package hu.zsinko.rpctime;
 
+import hu.zsinko.rpctime.client.TimeClientConfiguration;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

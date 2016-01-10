@@ -1,9 +1,10 @@
 package hu.zsinko.rpctime;
 
+import com.google.common.collect.EvictingQueue;
+import com.google.common.collect.Queues;
 import hu.zsinko.rpctime.server.TimeServerConfiguration;
 import hu.zsinko.rpctime.server.rest.TimeHttpServer;
 import hu.zsinko.rpctime.server.rpc.TimeRpcServer;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.Queue;
 
@@ -12,7 +13,9 @@ public class StartServer {
     public static void main(String[] args) {
 
         TimeServerConfiguration config = new TimeServerConfiguration();
-        Queue<Long> queue = new CircularFifoQueue<>(config.getRpcQueueLength());
+
+        EvictingQueue<Long> evictingQueue = EvictingQueue.create(config.getRpcQueueLength());
+        Queue<Long> queue = Queues.synchronizedQueue(evictingQueue);
 
         TimeRpcServer timeRpcServer = new TimeRpcServer(config);
         timeRpcServer.start(queue);

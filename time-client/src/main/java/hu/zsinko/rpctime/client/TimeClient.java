@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static hu.zsinko.rpctime.proto.TimeServerMessages.TimeRequest;
 import static hu.zsinko.rpctime.proto.TimeServerMessages.TimeResponse;
@@ -27,9 +28,10 @@ public class TimeClient {
     private Logger logger = LoggerFactory.getLogger(TimeClient.class);
 
     private RpcController rpcController;
-    private RpcClientChannel channel;
+    private TimeService.BlockingInterface timeService;
     private PeerInfo server;
     private CleanShutdownHandler shutdownHandler;
+    private RpcClientChannel channel;
 
     public TimeClient(final String serverName, final int port) {
         this.server = new PeerInfo(serverName, port);
@@ -37,7 +39,7 @@ public class TimeClient {
 
     public void connect() throws IOException {
 
-        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(10, 10);
+        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(2, 10);
         DuplexTcpClientPipelineFactory clientFactory = createClientFactory(executor);
 
         NioEventLoopGroup workers = new NioEventLoopGroup();
@@ -50,6 +52,7 @@ public class TimeClient {
 
         try {
             channel = clientFactory.peerWith(server, bootstrap);
+            timeService = TimeService.newBlockingStub(channel);
             rpcController = channel.newRpcController();
             logger.debug("Connected to {}:{}", server.getHostName(), server.getPort());
         } catch (IOException e) {
@@ -60,15 +63,14 @@ public class TimeClient {
 
     }
 
-    public long getCurrentTime() {
+    public Date getCurrentTime() {
         logger.debug("Requesting time from server");
-        TimeService.BlockingInterface timeService = TimeService.newBlockingStub(channel);
-
-        TimeRequest.Builder timeRequest = TimeRequest.newBuilder();
         try {
+            TimeRequest.Builder timeRequest = TimeRequest.newBuilder();
             TimeResponse response = timeService.getCurrentTime(rpcController, timeRequest.build());
-            logger.debug("Time request result: {}", response.getCurrentTime());
-            return response.getCurrentTime();
+            Date result = new Date(response.getCurrentTime());
+            logger.debug("Time request result: {}", result);
+            return result;
         } catch (ServiceException e) {
             logger.debug("Rpc request failed {} ", rpcController.errorText());
             throw new RuntimeException(e);

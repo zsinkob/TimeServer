@@ -20,23 +20,33 @@ import java.util.concurrent.Executors;
 public class TimeRpcServer {
 
     private final TimeServerConfiguration config;
+    private final PeerInfo serverInfo;
     private CleanShutdownHandler shutdownHandler;
-
     private Logger logger = LoggerFactory.getLogger(TimeRpcServer.class);
 
 
     public TimeRpcServer(TimeServerConfiguration config) {
         this.config = config;
+        serverInfo = new PeerInfo(config.getRpcHost(), config.getRpcPort());
+
     }
 
     public void start(final Queue<Long> queue) {
         logger.info("Starting RPC server");
-        PeerInfo serverInfo = new PeerInfo(config.getRpcHost(), config.getRpcPort());
-        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(config.getRpcMinThreads(), config.getRpcMaxThreads());
 
-        DuplexTcpServerPipelineFactory serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
-        serverFactory.setRpcServerCallExecutor(executor);
+        shutdownHandler = new CleanShutdownHandler();
+        DuplexTcpServerPipelineFactory serverFactory = createPipelineFactory(queue);
+        ServerBootstrap bootstrap = createServerBootstrap(serverFactory);
 
+        bootstrap.bind();
+        logger.info("RPC server started on port {}", config.getRpcPort());
+    }
+
+    public void close() {
+        shutdownHandler.shutdown();
+    }
+
+    private ServerBootstrap createServerBootstrap(final DuplexTcpServerPipelineFactory serverFactory) {
         EventLoopGroup boss = new NioEventLoopGroup(0, new RenamingThreadFactoryProxy("boss", Executors.defaultThreadFactory()));
         EventLoopGroup workers = new NioEventLoopGroup(0, new RenamingThreadFactoryProxy("worker", Executors.defaultThreadFactory()));
 
@@ -45,20 +55,18 @@ public class TimeRpcServer {
         bootstrap.channel(NioServerSocketChannel.class);
         bootstrap.childHandler(serverFactory);
         bootstrap.localAddress(serverInfo.getPort());
-
-        serverFactory.getRpcServiceRegistry().registerService(new TimeServiceImpl(queue));
-
-        shutdownHandler = new CleanShutdownHandler();
         shutdownHandler.addResource(boss);
         shutdownHandler.addResource(workers);
-        shutdownHandler.addResource(executor);
-
-        bootstrap.bind();
-        logger.info("RPC server started on port {}", config.getRpcPort());
+        return bootstrap;
     }
 
-    public void close() {
-        shutdownHandler.shutdown();
+    private DuplexTcpServerPipelineFactory createPipelineFactory(final Queue<Long> queue) {
+        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(config.getRpcMinThreads(), config.getRpcMaxThreads());
+        DuplexTcpServerPipelineFactory serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
+        serverFactory.setRpcServerCallExecutor(executor);
+        serverFactory.getRpcServiceRegistry().registerService(new TimeServiceImpl(queue));
+        shutdownHandler.addResource(executor);
+        return serverFactory;
     }
 
 }

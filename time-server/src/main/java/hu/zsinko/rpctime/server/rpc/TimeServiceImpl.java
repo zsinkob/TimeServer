@@ -17,24 +17,22 @@ import static hu.zsinko.rpctime.proto.TimeServerMessages.TimeResponse;
 
 public class TimeServiceImpl extends TimeServerServices.TimeService {
 
+    private final Queue<Long> queue;
     private Logger logger = LoggerFactory.getLogger(TimeServiceImpl.class);
 
-
-    private Queue<Long> queue;
-
-    public TimeServiceImpl(Queue<Long> queue) {
+    public TimeServiceImpl(final Queue<Long> queue) {
         this.queue = queue;
     }
 
     @Override
-    public void getCurrentTime(RpcController controller, TimeRequest request, RpcCallback<TimeServerMessages.TimeResponse> done) {
+    public void getCurrentTime(RpcController controller, TimeRequest request, RpcCallback<TimeServerMessages.TimeResponse> callback) {
         RpcClient rpcClient = ((ServerRpcController) controller).getRpcClient();
         logger.debug("New time request {}", rpcClient.getServerInfo());
 
         long currentTime = System.currentTimeMillis();
         queue.add(currentTime);
 
-        done.run(buildResponse(currentTime));
+        callback.run(buildResponse(currentTime));
     }
 
     private TimeResponse buildResponse(long currentTime) {
