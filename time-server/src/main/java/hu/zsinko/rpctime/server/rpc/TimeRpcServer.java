@@ -6,32 +6,41 @@ import com.googlecode.protobuf.pro.duplex.execute.RpcServerCallExecutor;
 import com.googlecode.protobuf.pro.duplex.execute.ThreadPoolCallExecutor;
 import com.googlecode.protobuf.pro.duplex.server.DuplexTcpServerPipelineFactory;
 import com.googlecode.protobuf.pro.duplex.util.RenamingThreadFactoryProxy;
+import hu.zsinko.rpctime.server.TimeServerConfiguration;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.Executors;
 
 public class TimeRpcServer {
 
-    private final PeerInfo serverInfo;
+    private final TimeServerConfiguration config;
     private CleanShutdownHandler shutdownHandler;
 
-    public TimeRpcServer(final String host, final int port) {
-        serverInfo = new PeerInfo("localhost", 4446);
+    private Logger logger = LoggerFactory.getLogger(TimeRpcServer.class);
+
+
+    public TimeRpcServer(TimeServerConfiguration config) {
+        this.config = config;
     }
 
     public void start(final Queue<Long> queue) {
-        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(3, 200);
+        logger.info("Starting RPC server");
+        PeerInfo serverInfo = new PeerInfo(config.getRpcHost(), config.getRpcPort());
+        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(config.getRpcMinThreads(), config.getRpcMaxThreads());
 
         DuplexTcpServerPipelineFactory serverFactory = new DuplexTcpServerPipelineFactory(serverInfo);
         serverFactory.setRpcServerCallExecutor(executor);
 
-        ServerBootstrap bootstrap = new ServerBootstrap();
         EventLoopGroup boss = new NioEventLoopGroup(0, new RenamingThreadFactoryProxy("boss", Executors.defaultThreadFactory()));
         EventLoopGroup workers = new NioEventLoopGroup(0, new RenamingThreadFactoryProxy("worker", Executors.defaultThreadFactory()));
+
+        ServerBootstrap bootstrap = new ServerBootstrap();
         bootstrap.group(boss, workers);
         bootstrap.channel(NioServerSocketChannel.class);
         bootstrap.childHandler(serverFactory);
@@ -45,6 +54,7 @@ public class TimeRpcServer {
         shutdownHandler.addResource(executor);
 
         bootstrap.bind();
+        logger.info("RPC server started on port {}", config.getRpcPort());
     }
 
     public void close() {

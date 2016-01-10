@@ -3,19 +3,32 @@ package hu.zsinko.rpctime;
 import hu.zsinko.rpctime.client.TimeClient;
 
 import java.io.IOException;
-import java.time.LocalTime;
-import java.util.Date;
 
 public class StartClient {
 
     public static void main(String[] args) throws IOException {
 
+        TimeClientConfiguration config = new TimeClientConfiguration(args);
 
-
-        TimeClient timeClient = new TimeClient("localhost", 4446);
+        TimeClient timeClient = new TimeClient(config.getServerAddress(), config.getServerPort());
         timeClient.connect();
-        long currentTime = timeClient.getCurrentTime();
-        System.out.println("Current time: " + new Date(currentTime));
-        timeClient.close();
+
+        try {
+            if (config.getRepeatInterval() > 0) {
+                while (true) {
+                    try {
+                        timeClient.getCurrentTime();
+                        Thread.sleep(config.getRepeatInterval() * 1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                timeClient.getCurrentTime();
+            }
+        } finally {
+            timeClient.close();
+        }
     }
+
 }
