@@ -22,6 +22,5 @@ public class StartServer {
 
         TimeHttpServer timeHttpServer = new TimeHttpServer(config);
         timeHttpServer.start(queue);
-
     }
 }

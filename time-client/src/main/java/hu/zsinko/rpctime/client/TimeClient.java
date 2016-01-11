@@ -39,16 +39,9 @@ public class TimeClient {
 
     public void connect() throws IOException {
 
-        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(2, 10);
-        DuplexTcpClientPipelineFactory clientFactory = createClientFactory(executor);
-
-        NioEventLoopGroup workers = new NioEventLoopGroup();
-
-        Bootstrap bootstrap = getBootstrap(clientFactory, workers);
-
         shutdownHandler = new CleanShutdownHandler();
-        shutdownHandler.addResource(executor);
-        shutdownHandler.addResource(workers);
+        DuplexTcpClientPipelineFactory clientFactory = createClientFactory();
+        Bootstrap bootstrap = getBootstrap(clientFactory);
 
         try {
             channel = clientFactory.peerWith(server, bootstrap);
@@ -82,9 +75,9 @@ public class TimeClient {
         shutdownHandler.shutdown();
     }
 
-    private Bootstrap getBootstrap(DuplexTcpClientPipelineFactory clientFactory, NioEventLoopGroup workers) {
+    private Bootstrap getBootstrap(DuplexTcpClientPipelineFactory clientFactory) {
         Bootstrap bootstrap = new Bootstrap();
-
+        NioEventLoopGroup workers = new NioEventLoopGroup();
         bootstrap.group(workers);
         bootstrap.handler(clientFactory);
         bootstrap.channel(NioSocketChannel.class);
@@ -92,11 +85,13 @@ public class TimeClient {
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
         bootstrap.option(ChannelOption.SO_SNDBUF, 1048576);
         bootstrap.option(ChannelOption.SO_RCVBUF, 1048576);
-
+        shutdownHandler.addResource(workers);
         return bootstrap;
     }
 
-    private DuplexTcpClientPipelineFactory createClientFactory(RpcServerCallExecutor executor) {
+    private DuplexTcpClientPipelineFactory createClientFactory() {
+        RpcServerCallExecutor executor = new ThreadPoolCallExecutor(2, 10);
+        shutdownHandler.addResource(executor);
         DuplexTcpClientPipelineFactory clientFactory = new DuplexTcpClientPipelineFactory();
         clientFactory.setRpcServerCallExecutor(executor);
 

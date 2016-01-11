@@ -25,15 +25,16 @@ public class TimeHttpServer {
 
     public void start(Queue<Long> queue) {
         logger.info("Starting HTTP server on port {}", config.getHttpPort());
+
         port(config.getHttpPort());
         staticFileLocation("/static");
         logger.info("/static endpoint configured");
         Gson gson = new Gson();
-        get("/timerequests", buildResponse(queue), gson::toJson);
+        get("/timerequests", timeRequestHandler(queue), gson::toJson);
         logger.info("/timerequests endpoint configured");
     }
 
-    private Route buildResponse(Queue<Long> queue) {
+    private Route timeRequestHandler(Queue<Long> queue) {
         return (request, response) -> {
             List<String> timeRequests = queue.stream().map((time) -> new Date(time).toString()).collect(Collectors.toList());
             return new TimeRequestsResponse(timeRequests);

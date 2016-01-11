@@ -28,7 +28,6 @@ public class TimeRpcServer {
     public TimeRpcServer(TimeServerConfiguration config) {
         this.config = config;
         serverInfo = new PeerInfo(config.getRpcHost(), config.getRpcPort());
-
     }
 
     public void start(final Queue<Long> queue) {

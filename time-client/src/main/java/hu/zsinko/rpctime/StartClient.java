@@ -16,19 +16,23 @@ public class StartClient {
 
         try {
             if (config.getRepeatInterval() > 0) {
-                while (true) {
-                    try {
-                        timeClient.getCurrentTime();
-                        Thread.sleep(config.getRepeatInterval() * 1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
+                startClientLoop(config, timeClient);
             } else {
                 timeClient.getCurrentTime();
             }
         } finally {
             timeClient.close();
+        }
+    }
+
+    private static void startClientLoop(TimeClientConfiguration config, TimeClient timeClient) {
+        while (true) {
+            try {
+                timeClient.getCurrentTime();
+                Thread.sleep(config.getRepeatInterval() * 1000);
+            } catch (InterruptedException e) {
+                break;
+            }
         }
     }
 
